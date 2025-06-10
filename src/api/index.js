@@ -1,18 +1,15 @@
 // src/api/index.js
 // Centralized API utility for backend communication
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+import axios from 'axios';
 
-export async function fetchWallet(userId) {
-  const res = await fetch(`${API_BASE_URL}/wallet/${userId}`);
-  if (!res.ok) throw new Error('Failed to fetch wallet');
-  return res.json();
-}
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000/api',
+  withCredentials: true, // if you use cookies/sessions
+});
 
-export async function fetchTrades(userId) {
-  const res = await fetch(`${API_BASE_URL}/trades/${userId}`);
-  if (!res.ok) throw new Error('Failed to fetch trades');
-  return res.json();
-}
+export default api;
 
-// Add more API functions as needed (deposit, withdraw, start bot, etc.)
+// Usage in other files:
+// import api from 'path_to_this_file';
+// api.get('/endpoint');

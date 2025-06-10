@@ -1,10 +1,12 @@
 // Example: TraderDashboard.js
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Row, Col, Table, Dropdown, DropdownButton, Spinner, Alert } from 'react-bootstrap';
+import { Card, Button, Row, Col, Table, Dropdown, DropdownButton, Spinner, Modal } from 'react-bootstrap';
 import { getWalletBalance, getWalletLogs, deposit, withdraw } from '../api/wallet';
 import { requestWithdrawal } from '../api/withdrawal';
 import { startBot, stopBot, switchBotMarket } from '../api/bot';
 import BotStatus from './BotStatus';
+import { useToast } from '../utils/ToastContext';
+import TradeDetailModal from './TradeDetailModal';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -31,8 +33,14 @@ const TraderDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [botStatus, setBotStatus] = useState('stopped');
   const [botMarket, setBotMarket] = useState('crypto');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [depositing, setDepositing] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
+  const [showBotConfirm, setShowBotConfirm] = useState(false);
+  const [pendingBotAction, setPendingBotAction] = useState(null);
+  const [selectedTrade, setSelectedTrade] = useState(null);
+  const [showTradeModal, setShowTradeModal] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     async function fetchData() {
@@ -49,44 +57,59 @@ const TraderDashboard = () => {
   }, []);
 
   const handleDeposit = async () => {
-    setError(''); setSuccess('');
+    setDepositing(true);
     try {
       await deposit(10000, 'NGN');
-      setSuccess('Deposit initiated!');
+      showToast('Deposit initiated!', 'success');
     } catch (e) {
-      setError('Deposit failed.');
+      showToast('Deposit failed.', 'danger');
     }
+    setDepositing(false);
   };
   const handleWithdraw = async () => {
-    setError(''); setSuccess('');
+    setWithdrawing(true);
     try {
       await requestWithdrawal('user@example.com', 5000, 'NGN');
-      setSuccess('Withdrawal requested! Check your email for OTP.');
+      showToast('Withdrawal requested! Check your email for OTP.', 'success');
     } catch (e) {
-      setError('Withdrawal failed.');
+      showToast('Withdrawal failed.', 'danger');
     }
+    setWithdrawing(false);
+    setShowWithdrawConfirm(false);
   };
   const handleBotAction = async (action) => {
-    setError(''); setSuccess('');
+    if (action === 'stop') {
+      setPendingBotAction(action);
+      setShowBotConfirm(true);
+      return;
+    }
+    await doBotAction(action);
+  };
+  const doBotAction = async (action) => {
     try {
       if (action === 'crypto') {
         await startBot('crypto');
         setBotMarket('crypto');
         setBotStatus('running');
-        setSuccess('Crypto bot started!');
+        showToast('Crypto bot started!', 'success');
       } else if (action === 'forex') {
         await startBot('forex');
         setBotMarket('forex');
         setBotStatus('running');
-        setSuccess('Forex bot started!');
+        showToast('Forex bot started!', 'success');
       } else if (action === 'stop') {
         await stopBot();
         setBotStatus('stopped');
-        setSuccess('Bot stopped.');
+        showToast('Bot stopped.', 'success');
       }
     } catch (e) {
-      setError('Bot action failed.');
+      showToast('Bot action failed.', 'danger');
     }
+    setShowBotConfirm(false);
+  };
+  const handleTradeClick = (trade) => {
+    setSelectedTrade(trade);
+    setShowTradeModal(true);
   };
 
   return (
@@ -94,8 +117,6 @@ const TraderDashboard = () => {
       <Card className="mb-4">
         <Card.Header as="h2">Trader Dashboard <BotStatus status={botStatus} market={botMarket} /></Card.Header>
         <Card.Body>
-          {error && <Alert variant="danger">{error}</Alert>}
-          {success && <Alert variant="success">{success}</Alert>}
           {loading ? <Spinner animation="border" /> : (
             <>
               <Row className="mb-3">
@@ -105,8 +126,12 @@ const TraderDashboard = () => {
                   <p>USD: ${balance.usd.toLocaleString()}</p>
                 </Col>
                 <Col>
-                  <Button variant="success" className="me-2" onClick={handleDeposit}>Deposit</Button>
-                  <Button variant="danger" onClick={handleWithdraw}>Withdraw</Button>
+                  <Button variant="success" className="me-2" onClick={handleDeposit} disabled={depositing}>
+                    {depositing ? <Spinner size="sm" animation="border" /> : 'Deposit'}
+                  </Button>
+                  <Button variant="danger" onClick={() => setShowWithdrawConfirm(true)} disabled={withdrawing}>
+                    {withdrawing ? <Spinner size="sm" animation="border" /> : 'Withdraw'}
+                  </Button>
                 </Col>
               </Row>
               <Row className="mb-3">
@@ -131,8 +156,10 @@ const TraderDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {logs.map((log, idx) => (
-                        <tr key={idx}>
+                      {logs.length === 0 ? (
+                        <tr><td colSpan={4}>No transactions yet.</td></tr>
+                      ) : logs.map((log, idx) => (
+                        <tr key={idx} style={{ cursor: 'pointer' }} onClick={() => handleTradeClick(log)}>
                           <td>{log.type}</td>
                           <td>{log.amount}</td>
                           <td>{log.currency}</td>
@@ -147,6 +174,28 @@ const TraderDashboard = () => {
           )}
         </Card.Body>
       </Card>
+      {/* Withdraw Confirmation Modal */}
+      <Modal show={showWithdrawConfirm} onHide={() => setShowWithdrawConfirm(false)}>
+        <Modal.Header closeButton><Modal.Title>Confirm Withdrawal</Modal.Title></Modal.Header>
+        <Modal.Body>Are you sure you want to withdraw 5,000 NGN?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowWithdrawConfirm(false)}>Cancel</Button>
+          <Button variant="danger" onClick={handleWithdraw} disabled={withdrawing}>
+            {withdrawing ? <Spinner size="sm" animation="border" /> : 'Confirm Withdraw'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      {/* Bot Stop Confirmation Modal */}
+      <Modal show={showBotConfirm} onHide={() => setShowBotConfirm(false)}>
+        <Modal.Header closeButton><Modal.Title>Stop Bot</Modal.Title></Modal.Header>
+        <Modal.Body>Are you sure you want to stop the trading bot?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowBotConfirm(false)}>Cancel</Button>
+          <Button variant="danger" onClick={() => doBotAction(pendingBotAction)}>Stop Bot</Button>
+        </Modal.Footer>
+      </Modal>
+      {/* Trade Detail Modal */}
+      <TradeDetailModal show={showTradeModal} onHide={() => setShowTradeModal(false)} trade={selectedTrade} />
     </ErrorBoundary>
   );
 };

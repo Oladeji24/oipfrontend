@@ -1,7 +1,8 @@
 // src/components/AuthForm.js
 import React, { useState } from 'react';
-import { Form, Button, Alert, Card } from 'react-bootstrap';
+import { Form, Button, Card } from 'react-bootstrap';
 import { login, register } from '../api/auth';
+import { useToast } from '../utils/ToastContext';
 
 const AuthForm = ({ onAuth }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,6 +11,7 @@ const AuthForm = ({ onAuth }) => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +25,9 @@ const AuthForm = ({ onAuth }) => {
       }
       onAuth && onAuth();
     } catch (err) {
-      setError(err.response?.data?.message || 'Authentication failed');
+      const msg = err.response?.data?.message || 'Authentication failed';
+      setError(msg);
+      showToast(msg, 'danger');
     }
     setLoading(false);
   };
@@ -32,7 +36,6 @@ const AuthForm = ({ onAuth }) => {
     <Card className="mb-4" style={{ maxWidth: 400, margin: '0 auto' }}>
       <Card.Body>
         <h3 className="mb-3">{isLogin ? 'Login' : 'Register'}</h3>
-        {error && <Alert variant="danger">{error}</Alert>}
         <Form onSubmit={handleSubmit}>
           {!isLogin && (
             <Form.Group className="mb-3">

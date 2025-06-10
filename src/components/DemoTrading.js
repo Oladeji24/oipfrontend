@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Button, Row, Col, Dropdown, DropdownButton, Spinner, Table } from 'react-bootstrap';
 import { getDemoBalance, getDemoLogs, startDemoTrade, stopDemoTrade, switchDemoMarket } from '../api/demo';
+import { useToast } from '../utils/ToastContext';
 
 const DemoTrading = () => {
   const [balance, setBalance] = useState({ ngn: 100000, usd: 0 });
@@ -8,6 +9,7 @@ const DemoTrading = () => {
   const [loading, setLoading] = useState(true);
   const [demoStatus, setDemoStatus] = useState('stopped');
   const [demoMarket, setDemoMarket] = useState('crypto');
+  const { showToast } = useToast();
 
   useEffect(() => {
     async function fetchData() {
@@ -24,13 +26,19 @@ const DemoTrading = () => {
   }, []);
 
   const handleDemoAction = async (action) => {
-    if (action === 'crypto' || action === 'forex') {
-      setDemoMarket(action);
-      setDemoStatus('running');
-      await startDemoTrade(action);
-    } else if (action === 'stop') {
-      setDemoStatus('stopped');
-      await stopDemoTrade();
+    try {
+      if (action === 'crypto' || action === 'forex') {
+        setDemoMarket(action);
+        setDemoStatus('running');
+        await startDemoTrade(action);
+        showToast(`Demo ${action === 'crypto' ? 'Crypto' : 'Forex'} started!`, 'success');
+      } else if (action === 'stop') {
+        setDemoStatus('stopped');
+        await stopDemoTrade();
+        showToast('Demo trading stopped.', 'info');
+      }
+    } catch (e) {
+      showToast('Demo action failed.', 'danger');
     }
   };
 
