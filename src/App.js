@@ -9,6 +9,9 @@ import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import { ToastProvider } from './utils/ToastContext';
+import KucoinMarket from './components/KucoinMarket';
+import DerivMarket from './components/DerivMarket';
+import MarketDashboard from './components/MarketDashboard';
 
 function ProtectedRoute({ children, adminOnly }) {
   const { user, loading } = useAuth();
@@ -30,6 +33,9 @@ function App() {
             <Route path="/admin" element={<ProtectedRoute adminOnly={true}><AdminPage /></ProtectedRoute>} />
             <Route path="/demo" element={<DemoPage />} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/kucoin" element={<ProtectedRoute><KucoinMarket /></ProtectedRoute>} />
+            <Route path="/deriv" element={<ProtectedRoute><DerivMarket /></ProtectedRoute>} />
+            <Route path="/markets" element={<ProtectedRoute><MarketDashboard /></ProtectedRoute>} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Router>

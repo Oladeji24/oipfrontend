@@ -4,6 +4,9 @@ import { getUsers, flagUser } from '../api/user';
 import { approveWithdrawal } from '../api/withdrawal';
 import { useToast } from '../utils/ToastContext';
 import UserDetailModal from './UserDetailModal';
+import KucoinSymbolCacheAdmin from './KucoinSymbolCacheAdmin';
+import DerivSymbolCacheAdmin from './DerivSymbolCacheAdmin';
+import DerivAnalytics from './DerivAnalytics';
 
 const PAGE_SIZE = 10;
 
@@ -126,6 +129,9 @@ const AdminDashboard = () => {
         )}
         <h5 className="mt-4">Platform Health</h5>
         <p>All systems operational.</p>
+        <KucoinSymbolCacheAdmin />
+        <DerivSymbolCacheAdmin />
+        <DerivAnalytics />
       </Card.Body>
       <UserDetailModal show={showUserModal} onHide={() => setShowUserModal(false)} user={selectedUser} />
     </Card>
