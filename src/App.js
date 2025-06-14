@@ -12,6 +12,8 @@ import { ToastProvider } from './utils/ToastContext';
 import KucoinMarket from './components/KucoinMarket';
 import DerivMarket from './components/DerivMarket';
 import MarketDashboard from './components/MarketDashboard';
+import LoginPage from './components/LoginPage';
+import TraderDashboard from './components/TraderDashboard';
 
 function ProtectedRoute({ children, adminOnly }) {
   const { user, loading } = useAuth();
@@ -29,7 +31,8 @@ function App() {
           <Navigation />
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/" element={<ProtectedRoute><TraderPage /></ProtectedRoute>} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<TraderDashboard />} />
             <Route path="/admin" element={<ProtectedRoute adminOnly={true}><AdminPage /></ProtectedRoute>} />
             <Route path="/demo" element={<DemoPage />} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

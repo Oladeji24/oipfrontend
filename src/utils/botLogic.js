@@ -168,6 +168,18 @@ const strategyMap = {
     if (emaFast[last] > emaMid[last] && emaMid[last] > emaSlow[last]) return 'buy';
     if (emaFast[last] < emaMid[last] && emaMid[last] < emaSlow[last]) return 'sell';
     return 'hold';
+  },
+  'hybrid': (closes, priceData, params) => {
+    // Example: Buy if MACD > signal, RSI < 60, and volume trend is 'buy'
+    const { macdFast, macdSlow, macdSignal, rsiPeriod } = params;
+    if (closes.length < Math.max(macdFast, macdSlow, macdSignal, rsiPeriod)) return 'hold';
+    const { macd, signal } = calculateMACD(closes, macdFast, macdSlow, macdSignal);
+    const rsi = calculateRSI(closes, rsiPeriod);
+    const last = closes.length - 1;
+    const volTrend = detectVolumeTrend(priceData);
+    if (macd[last] > signal[last] && rsi[last] < 60 && volTrend === 'buy') return 'buy';
+    if (macd[last] < signal[last] && rsi[last] > 40 && volTrend === 'sell') return 'sell';
+    return 'hold';
   }
   // Placeholder for custom/hybrid strategies
   // 'custom': (closes, priceData, params) => {
@@ -235,6 +247,18 @@ export function detectTrend(priceData, params = {}) {
       // Buy: fast > mid > slow, Sell: fast < mid < slow
       if (emaFast[last] > emaMid[last] && emaMid[last] > emaSlow[last]) return 'buy';
       if (emaFast[last] < emaMid[last] && emaMid[last] < emaSlow[last]) return 'sell';
+      return 'hold';
+    },
+    'hybrid': () => {
+      // Example: Buy if MACD > signal, RSI < 60, and volume trend is 'buy'
+      const { macdFast, macdSlow, macdSignal, rsiPeriod } = params;
+      if (closes.length < Math.max(macdFast, macdSlow, macdSignal, rsiPeriod)) return 'hold';
+      const { macd, signal } = calculateMACD(closes, macdFast, macdSlow, macdSignal);
+      const rsi = calculateRSI(closes, rsiPeriod);
+      const last = closes.length - 1;
+      const volTrend = detectVolumeTrend(priceData);
+      if (macd[last] > signal[last] && rsi[last] < 60 && volTrend === 'buy') return 'buy';
+      if (macd[last] < signal[last] && rsi[last] > 40 && volTrend === 'sell') return 'sell';
       return 'hold';
     }
     // Add more strategies here as needed

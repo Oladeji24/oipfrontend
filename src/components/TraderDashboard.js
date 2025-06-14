@@ -21,6 +21,8 @@ import {
 } from 'chart.js';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 import { MAJOR_PAIRS } from '../utils/botLogic';
+import { useAuth } from '../context/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -42,6 +44,7 @@ class ErrorBoundary extends React.Component {
 }
 
 const TraderDashboard = () => {
+  const { user, loading: authLoading } = useAuth();
   const [balance, setBalance] = useState({ ngn: 0, usd: 0 });
   const [logs, setLogs] = useState([]);
   const [analytics, setAnalytics] = useState(null);
@@ -267,6 +270,9 @@ const TraderDashboard = () => {
     ],
   } : null;
 
+  if (authLoading) return <Spinner animation="border" className="d-block mx-auto mt-5" />;
+  if (!user) return <Navigate to="/login" />;
+
   return (
     <ErrorBoundary>
       <Card className="mb-4">
@@ -446,6 +452,7 @@ EMA/RSI: Combines Exponential Moving Averages and Relative Strength Index. Buys 
                 <option value="macd">MACD (Trend Crossovers)</option>
                 <option value="volume">Volume (Volume Spikes)</option>
                 <option value="triple-ema">Triple EMA (Trend Confirmation)</option>
+                <option value="hybrid">Hybrid (MACD + RSI + Volume)</option>
               </select>
               <div className="form-text text-secondary" id="strategyHelp">
                 {botParams.strategy === '' && <span className="text-danger">Please select a strategy to get started.</span>}
@@ -453,6 +460,7 @@ EMA/RSI: Combines Exponential Moving Averages and Relative Strength Index. Buys 
                 {botParams.strategy === 'macd' && (<><b>MACD:</b> Uses the difference between two EMAs and a signal line. Buys on MACD cross above signal, sells on cross below.</>)}
                 {botParams.strategy === 'volume' && (<><b>Volume:</b> Looks for volume spikes with price movement. Buys on high volume and price up, sells on high volume and price down.</>)}
                 {botParams.strategy === 'triple-ema' && (<><b>Triple EMA:</b> Uses three EMAs (fast, mid, slow) for trend confirmation. Buys when fast &gt; mid &gt; slow, sells when fast &lt; mid &lt; slow.</>)}
+                {botParams.strategy === 'hybrid' && (<><b>Hybrid:</b> Combines MACD, RSI, and Volume trends. Buys when MACD &gt; signal, RSI &lt; 60, and volume trend is buy. Sells when MACD &lt; signal, RSI &gt; 40, and volume trend is sell.</>)}
               </div>
               {botParams.strategy && (
                 <div className="alert alert-info mt-2 p-2">
@@ -460,7 +468,39 @@ EMA/RSI: Combines Exponential Moving Averages and Relative Strength Index. Buys 
                 </div>
               )}
             </div>
-            {/* Show triple EMA params only if selected */}
+            {/* Show only relevant parameter fields for the selected strategy */}
+            {botParams.strategy === 'ema-rsi' && (
+              <>
+                <div className="mb-3">
+                  <label className="form-label">EMA Fast Period</label>
+                  <input type="number" className="form-control" name="emaFastPeriod" min="2" max="50" value={botParams.emaFastPeriod} onChange={handleBotParamChange} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">EMA Slow Period</label>
+                  <input type="number" className="form-control" name="emaSlowPeriod" min="2" max="100" value={botParams.emaSlowPeriod} onChange={handleBotParamChange} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">RSI Period</label>
+                  <input type="number" className="form-control" name="rsiPeriod" min="2" max="50" value={botParams.rsiPeriod} onChange={handleBotParamChange} />
+                </div>
+              </>
+            )}
+            {botParams.strategy === 'macd' && (
+              <>
+                <div className="mb-3">
+                  <label className="form-label">MACD Fast Period</label>
+                  <input type="number" className="form-control" name="macdFast" min="2" max="50" value={botParams.macdFast} onChange={handleBotParamChange} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">MACD Slow Period</label>
+                  <input type="number" className="form-control" name="macdSlow" min="2" max="50" value={botParams.macdSlow} onChange={handleBotParamChange} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">MACD Signal Period</label>
+                  <input type="number" className="form-control" name="macdSignal" min="1" max="50" value={botParams.macdSignal} onChange={handleBotParamChange} />
+                </div>
+              </>
+            )}
             {botParams.strategy === 'triple-ema' && (
               <>
                 <div className="mb-3">
@@ -495,30 +535,30 @@ EMA/RSI: Combines Exponential Moving Averages and Relative Strength Index. Buys 
                 </div>
               </>
             )}
-            <div className="mb-3">
-              <label className="form-label">EMA Fast Period</label>
-              <input type="number" className="form-control" name="emaFastPeriod" min="2" max="50" value={botParams.emaFastPeriod} onChange={handleBotParamChange} />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">EMA Slow Period</label>
-              <input type="number" className="form-control" name="emaSlowPeriod" min="2" max="100" value={botParams.emaSlowPeriod} onChange={handleBotParamChange} />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">RSI Period</label>
-              <input type="number" className="form-control" name="rsiPeriod" min="2" max="50" value={botParams.rsiPeriod} onChange={handleBotParamChange} />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">MACD Fast Period</label>
-              <input type="number" className="form-control" name="macdFast" min="2" max="50" value={botParams.macdFast} onChange={handleBotParamChange} />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">MACD Slow Period</label>
-              <input type="number" className="form-control" name="macdSlow" min="2" max="50" value={botParams.macdSlow} onChange={handleBotParamChange} />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">MACD Signal Period</label>
-              <input type="number" className="form-control" name="macdSignal" min="1" max="50" value={botParams.macdSignal} onChange={handleBotParamChange} />
-            </div>
+            {botParams.strategy === 'hybrid' && (
+              <>
+                <div className="mb-3">
+                  <label className="form-label">MACD Fast Period</label>
+                  <input type="number" className="form-control" name="macdFast" min="2" max="50" value={botParams.macdFast} onChange={handleBotParamChange} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">MACD Slow Period</label>
+                  <input type="number" className="form-control" name="macdSlow" min="2" max="50" value={botParams.macdSlow} onChange={handleBotParamChange} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">MACD Signal Period</label>
+                  <input type="number" className="form-control" name="macdSignal" min="1" max="50" value={botParams.macdSignal} onChange={handleBotParamChange} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">RSI Period</label>
+                  <input type="number" className="form-control" name="rsiPeriod" min="2" max="50" value={botParams.rsiPeriod} onChange={handleBotParamChange} />
+                </div>
+                <div className="alert alert-info p-2">
+                  <b>Hybrid Strategy:</b> Buys when MACD &gt; signal, RSI &lt; 60, and volume trend is buy. Sells when MACD &lt; signal, RSI &gt; 40, and volume trend is sell.
+                </div>
+              </>
+            )}
+            {/* Volume strategy does not require extra params */}
             <div className="mb-3">
               <label className="form-label">Risk Level (1-5)</label>
               <input type="number" className="form-control" name="riskLevel" min="1" max="5" value={botParams.riskLevel} onChange={handleBotParamChange} />
