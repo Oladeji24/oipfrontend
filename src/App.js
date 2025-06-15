@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navigation from './components/Navigation';
-import TraderPage from './pages/TraderPage';
 import AdminPage from './pages/AdminPage';
 import DemoPage from './pages/DemoPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -14,6 +13,7 @@ import DerivMarket from './components/DerivMarket';
 import MarketDashboard from './components/MarketDashboard';
 import LoginPage from './components/LoginPage';
 import TraderDashboard from './components/TraderDashboard';
+import Footer from './components/Footer';
 
 function ProtectedRoute({ children, adminOnly }) {
   const { user, loading } = useAuth();
@@ -41,6 +41,7 @@ function App() {
             <Route path="/markets" element={<ProtectedRoute><MarketDashboard /></ProtectedRoute>} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          <Footer />
         </Router>
       </AuthProvider>
     </ToastProvider>

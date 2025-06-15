@@ -18,3 +18,5 @@ export const updateProfile = async (data) => {
   if (!res.ok) throw new Error((await res.json()).message || 'Profile update failed');
   return res.json();
 };
+export const promoteUser = (id) => api.post(`/users/${id}/promote`);
+export const demoteUser = (id) => api.post(`/users/${id}/demote`);

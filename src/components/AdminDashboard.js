@@ -7,6 +7,7 @@ import UserDetailModal from './UserDetailModal';
 import KucoinSymbolCacheAdmin from './KucoinSymbolCacheAdmin';
 import DerivSymbolCacheAdmin from './DerivSymbolCacheAdmin';
 import DerivAnalytics from './DerivAnalytics';
+import AuditLogViewer from './AuditLogViewer';
 
 const PAGE_SIZE = 10;
 
@@ -57,6 +58,25 @@ const AdminDashboard = () => {
     setShowUserModal(true);
   };
 
+  const handlePromote = async (id) => {
+    try {
+      await promoteUser(id);
+      showToast('User promoted to admin!', 'success');
+      setUsers(users.map(u => u.id === id ? { ...u, role: 'admin' } : u));
+    } catch (e) {
+      showToast('Failed to promote user.', 'danger');
+    }
+  };
+  const handleDemote = async (id) => {
+    try {
+      await demoteUser(id);
+      showToast('User demoted to user!', 'warning');
+      setUsers(users.map(u => u.id === id ? { ...u, role: 'user' } : u));
+    } catch (e) {
+      showToast('Failed to demote user.', 'danger');
+    }
+  };
+
   // Filter and paginate users
   const filteredUsers = users.filter(u => u.email.toLowerCase().includes(search.toLowerCase()));
   const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE) || 1;
@@ -105,6 +125,12 @@ const AdminDashboard = () => {
                       <Button size="sm" variant="success" disabled={approving} onClick={() => handleApproveWithdrawal(user.id)}>
                         {approving ? 'Approving...' : 'Approve Withdrawal'}
                       </Button>
+                      {user.role !== 'superadmin' && (
+                        <>
+                          <Button size="sm" variant="info" className="ms-2" onClick={() => handlePromote(user.id)}>Promote</Button>
+                          <Button size="sm" variant="secondary" className="ms-2" onClick={() => handleDemote(user.id)}>Demote</Button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -134,6 +160,7 @@ const AdminDashboard = () => {
         <DerivAnalytics />
       </Card.Body>
       <UserDetailModal show={showUserModal} onHide={() => setShowUserModal(false)} user={selectedUser} />
+      <AuditLogViewer />
     </Card>
   );
 };
