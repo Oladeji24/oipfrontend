@@ -7,7 +7,7 @@ import DemoPage from './pages/DemoPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
-import { AuthProvider, useAuth } from './utils/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './utils/ToastContext';
 import KucoinMarket from './components/KucoinMarket';
 import DerivMarket from './components/DerivMarket';

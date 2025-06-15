@@ -1,4 +1,3 @@
-// Example: TraderDashboard.js
 import React, { useEffect, useState } from 'react';
 import { Card, Button, Row, Col, Table, Dropdown, DropdownButton, Spinner, Modal } from 'react-bootstrap';
 import { getWalletBalance, getWalletLogs, deposit, withdraw } from '../api/wallet';
@@ -9,20 +8,12 @@ import { useToast } from '../utils/ToastContext';
 import TradeDetailModal from './TradeDetailModal';
 import { getUserAnalytics } from '../api/analytics';
 import { Line, Bar, Pie } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { MAJOR_PAIRS } from '../utils/botLogic';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

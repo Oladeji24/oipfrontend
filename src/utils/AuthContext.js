@@ -1,6 +1,6 @@
 // src/utils/AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getCurrentUser, logout } from '../api/auth';
+import { getUser, logout } from '../api/auth';
 
 const AuthContext = createContext();
 
@@ -14,8 +14,13 @@ export const AuthProvider = ({ children }) => {
     async function fetchUser() {
       setLoading(true);
       try {
-        const res = await getCurrentUser();
-        setUser(res.data);
+        const token = localStorage.getItem('token');
+        if (token) {
+          const res = await getUser(token);
+          setUser(res.data);
+        } else {
+          setUser(null);
+        }
       } catch {
         setUser(null);
       }

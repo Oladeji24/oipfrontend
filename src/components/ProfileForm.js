@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Form, Button, Spinner, Card } from 'react-bootstrap';
-import { useAuth } from '../utils/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../utils/ToastContext';
 import { updateProfile } from '../api/user';
 

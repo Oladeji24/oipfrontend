@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../utils/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const Navigation = () => {
   const { user, logout } = useAuth();
