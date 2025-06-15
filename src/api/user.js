@@ -20,3 +20,5 @@ export const updateProfile = async (data) => {
 };
 export const promoteUser = (id) => api.post(`/users/${id}/promote`);
 export const demoteUser = (id) => api.post(`/users/${id}/demote`);
+export const updateUser = (id, data) => api.patch(`/users/${id}`, data);
+export const impersonateUser = (id) => api.post(`/users/${id}/impersonate`);
